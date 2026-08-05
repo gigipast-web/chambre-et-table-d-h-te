@@ -1,0 +1,6 @@
+{
+  "name": "Gîte & Table d'Hôtes Manager",
+  "description": "Application tout-en-un de gestion pour chambres et table d'hôtes : réservations, calendrier iCal, convives, facturation PDF, ménage et statistiques.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
