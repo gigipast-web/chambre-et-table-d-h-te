@@ -19,6 +19,8 @@ export const initialSettings: EstablishmentSettings = {
   siret: "892 341 012 00018",
   tvaNumber: "FR 42 892341012",
   touristTaxRate: 1.50, // € per adult / night
+  touristTaxPerAdultPerNight: 1.50,
+  depositPercentage: 30,
   defaultTvaRate: 10,
   wifiSsid: "MasDesLavandes_Guest",
   wifiPassword: "Provence2026!",

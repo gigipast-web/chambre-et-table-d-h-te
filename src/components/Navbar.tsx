@@ -1,13 +1,13 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 import {
   Sparkles,
   BedDouble,
   Utensils,
   CalendarCheck,
-  RefreshCw,
-  Bell,
-  Home
+  LogOut,
+  User
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -25,7 +25,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   activeTab,
   setActiveTab
 }) => {
-  const { settings, rooms, dailyMeals, resetDemoData } = useApp();
+  const { settings, rooms, dailyMeals } = useApp();
+  const { user, userProfile, logout } = useAuth();
 
   const occupiedRooms = rooms.filter(r => r.status === 'occupied').length;
   const todayStr = "2026-08-04"; // relative current date
@@ -62,7 +63,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Quick Metrics Badges - High Density */}
-          <div className="hidden md:flex items-center space-x-3">
+          <div className="hidden lg:flex items-center space-x-3">
             <div className="flex items-center space-x-1.5 bg-stone-800/80 px-2.5 py-1 rounded border border-stone-700/60 text-xs">
               <BedDouble className="w-3.5 h-3.5 text-amber-400" />
               <span className="text-stone-300">
@@ -85,7 +86,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
 
-          {/* Action Buttons */}
+          {/* Action Buttons & User Badge */}
           <div className="flex items-center space-x-2">
             {onOpenNewBooking && (
               <button
@@ -105,21 +106,30 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="hidden sm:inline">IA Concierge</span>
             </button>
 
-            <button
-              onClick={() => {
-                if (confirm("Réinitialiser les données avec la démonstration par défaut ?")) {
-                  resetDemoData();
-                }
-              }}
-              className="p-1.5 text-stone-400 hover:text-white hover:bg-stone-800 rounded transition-colors cursor-pointer"
-              title="Réinitialiser les données de démo"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-            </button>
+            {user && (
+              <div className="flex items-center space-x-1.5 pl-2 border-l border-stone-700 text-xs">
+                <div className="hidden md:flex flex-col text-right">
+                  <span className="font-bold text-stone-200 text-[11px] truncate max-w-[120px]">
+                    {userProfile?.displayName || user.email?.split('@')[0]}
+                  </span>
+                  <span className="text-[9px] text-stone-400 truncate max-w-[120px]">
+                    {userProfile?.establishmentName || user.email}
+                  </span>
+                </div>
+                <button
+                  onClick={logout}
+                  className="p-1.5 text-stone-400 hover:text-rose-300 hover:bg-stone-800 rounded transition cursor-pointer"
+                  title="Déconnexion"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
     </header>
   );
 };
+
 

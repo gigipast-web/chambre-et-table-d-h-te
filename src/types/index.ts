@@ -168,6 +168,8 @@ export interface EstablishmentSettings {
   siret: string;
   tvaNumber: string;
   touristTaxRate: number; // Euro per adult/night
+  touristTaxPerAdultPerNight: number; // Euro per adult/night
+  depositPercentage: number; // e.g. 30
   defaultTvaRate: number; // e.g. 10
   wifiSsid: string;
   wifiPassword: string;

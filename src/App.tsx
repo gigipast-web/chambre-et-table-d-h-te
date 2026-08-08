@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { AppProvider, useApp } from './context/AppContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { AppProvider } from './context/AppContext';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { AuthScreen } from './components/AuthScreen';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
 import { MobileNav } from './components/MobileNav';
@@ -21,7 +24,7 @@ import { NewGuestModal } from './components/NewGuestModal';
 import { AiMenuModal } from './components/AiMenuModal';
 import { AiEmailModal } from './components/AiEmailModal';
 
-function AppContent() {
+function MainAppLayout() {
   const [activeTab, setActiveTab] = useState('dashboard');
 
   // Modal visibility states
@@ -98,7 +101,6 @@ function AppContent() {
         </main>
       </div>
 
-
       {/* Mobile Bottom Navigation Bar */}
       <MobileNav activeTab={activeTab} onTabChange={setActiveTab} />
 
@@ -122,11 +124,38 @@ function AppContent() {
   );
 }
 
-export function App() {
+function AppRouter() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-stone-100 flex items-center justify-center font-sans text-stone-600">
+        <div className="flex flex-col items-center space-y-3">
+          <div className="w-8 h-8 border-4 border-[#4A6741] border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-xs font-semibold text-stone-700">Chargement de votre espace de gestion...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthScreen />;
+  }
+
   return (
     <AppProvider>
-      <AppContent />
+      <MainAppLayout />
     </AppProvider>
+  );
+}
+
+export function App() {
+  return (
+    <ErrorBoundary>
+      <AuthProvider>
+        <AppRouter />
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 
