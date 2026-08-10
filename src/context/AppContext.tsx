@@ -50,6 +50,14 @@ interface AppContextType {
 
   // Booking actions
   addBooking: (booking: Omit<Booking, 'id' | 'bookingNumber' | 'createdDate'>) => Booking;
+  batchImportBookingsAndGuests: (
+    items: Array<{
+      guestData: Omit<Guest, 'id' | 'createdAt'>;
+      bookingData: Omit<Booking, 'id' | 'bookingNumber' | 'createdDate'> & {
+        bookingNumber?: string;
+      };
+    }>
+  ) => { importedBookingsCount: number; importedGuestsCount: number };
   updateBooking: (booking: Booking) => void;
   deleteBooking: (id: string) => void;
 
@@ -73,12 +81,16 @@ interface AppContextType {
 
   // Settings & Extras
   updateSettings: (newSettings: EstablishmentSettings) => void;
+  updateSubscription: (planId: import('../types').SubscriptionPlanId, cycle?: 'monthly' | 'yearly', cardLast4?: string) => void;
+  startProTrial: () => void;
+  cancelSubscription: () => void;
   addGiftVoucher: (voucher: Omit<GiftVoucher, 'id'>) => void;
   updateGiftVoucherStatus: (id: string, status: GiftVoucher['status']) => void;
   addPaymentRecord: (payment: Omit<PaymentRecord, 'id'>) => void;
 
-  // Reset
+  // Reset & Clear Demo
   resetDemoData: () => void;
+  clearDemoDataAndApplyNewParameters: (customSettings?: Partial<EstablishmentSettings>) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -132,14 +144,50 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           }
         } else {
           // Initialize fresh data for this user
+          const isDemoAccount = user.email === 'demo@domaine-lavandes.fr';
+
           const customSettings: EstablishmentSettings = {
             ...initialSettings,
-            name: userProfile?.establishmentName || 'Mon Domaine / Maison d\'Hôtes',
-            ownerName: userProfile?.displayName || user.displayName || 'Gestionnaire',
-            email: user.email || initialSettings.email
+            name: userProfile?.establishmentName || 'Mon Établissement',
+            ownerName: userProfile?.displayName || user.displayName || 'Gérant',
+            email: user.email || initialSettings.email,
+            subscription: {
+              planId: 'free',
+              planName: 'Formule Découverte (Gratuit)',
+              status: 'active',
+              billingCycle: 'monthly',
+              priceEuro: 0,
+              startDate: new Date().toISOString().split('T')[0],
+              renewalDate: 'Sans engagement'
+            }
           };
 
-          const initialPayload = {
+          const starterRoom: Room[] = [
+            {
+              id: "room-1",
+              name: "Chambre 1",
+              description: "Première chambre de votre établissement.",
+              capacity: {
+                adults: 2,
+                children: 1,
+                maxTotal: 3
+              },
+              basePrice: 90,
+              seasonalRates: {
+                lowSeason: 80,
+                midSeason: 90,
+                highSeason: 110,
+                weekendExtra: 10
+              },
+              amenities: ["Wifi Gratuit", "Lit Double", "Salle de bain privée", "Climatisation"],
+              photos: ["https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&q=80&w=800"],
+              status: "available",
+              surface: 22,
+              floor: "Rez-de-chaussée"
+            }
+          ];
+
+          const initialPayload = isDemoAccount ? {
             rooms: initialRooms,
             guests: initialGuests,
             bookings: initialBookings,
@@ -149,10 +197,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             settings: customSettings,
             giftVouchers: initialGiftVouchers,
             payments: initialPaymentRecords
+          } : {
+            rooms: starterRoom,
+            guests: [],
+            bookings: [],
+            dailyMeals: [],
+            invoices: [],
+            housekeeping: [],
+            settings: customSettings,
+            giftVouchers: [],
+            payments: []
           };
 
           if (isMounted) {
+            setRooms(initialPayload.rooms);
+            setGuests(initialPayload.guests);
+            setBookings(initialPayload.bookings);
+            setDailyMeals(initialPayload.dailyMeals);
+            setInvoices(initialPayload.invoices);
+            setHousekeeping(initialPayload.housekeeping);
             setSettings(customSettings);
+            setGiftVouchers(initialPayload.giftVouchers);
+            setPayments(initialPayload.payments);
           }
           await setDoc(dataDocRef, initialPayload);
         }
@@ -278,6 +344,63 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     saveToFirestore({ bookings: nextBookings, rooms: nextRooms });
     return newBooking;
+  };
+
+  const batchImportBookingsAndGuests = (
+    items: Array<{
+      guestData: Omit<Guest, 'id' | 'createdAt'>;
+      bookingData: Omit<Booking, 'id' | 'bookingNumber' | 'createdDate'> & {
+        bookingNumber?: string;
+      };
+    }>
+  ) => {
+    let currentGuests = [...guests];
+    let currentBookings = [...bookings];
+    let importedGuestsCount = 0;
+    let importedBookingsCount = 0;
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    items.forEach((item, index) => {
+      // Find matching guest by email or by full name
+      const emailLower = item.guestData.email.trim().toLowerCase();
+      const fullNameLower = `${item.guestData.firstName} ${item.guestData.lastName}`.trim().toLowerCase();
+
+      let targetGuest = currentGuests.find(g => {
+        if (emailLower && g.email.trim().toLowerCase() === emailLower) return true;
+        const gName = `${g.firstName} ${g.lastName}`.trim().toLowerCase();
+        if (fullNameLower && gName === fullNameLower) return true;
+        return false;
+      });
+
+      if (!targetGuest) {
+        targetGuest = {
+          ...item.guestData,
+          id: `guest-imp-${Date.now()}-${index}-${Math.floor(Math.random() * 1000)}`,
+          createdAt: todayStr
+        };
+        currentGuests = [targetGuest, ...currentGuests];
+        importedGuestsCount++;
+      }
+
+      const bookingNum = item.bookingData.bookingNumber?.trim() || `RES-IMP-${Math.floor(1000 + Math.random() * 9000)}`;
+      const newBooking: Booking = {
+        ...item.bookingData,
+        id: `res-imp-${Date.now()}-${index}-${Math.floor(Math.random() * 1000)}`,
+        bookingNumber: bookingNum,
+        guestId: targetGuest.id,
+        guestName: `${targetGuest.firstName} ${targetGuest.lastName}`.trim() || item.bookingData.guestName,
+        createdDate: todayStr
+      };
+
+      currentBookings = [newBooking, ...currentBookings];
+      importedBookingsCount++;
+    });
+
+    setGuests(currentGuests);
+    setBookings(currentBookings);
+    saveToFirestore({ guests: currentGuests, bookings: currentBookings });
+
+    return { importedBookingsCount, importedGuestsCount };
   };
 
   const updateBooking = (updatedBooking: Booking) => {
@@ -524,6 +647,84 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     saveToFirestore({ settings: mergedSettings });
   };
 
+  const updateSubscription = (
+    planId: import('../types').SubscriptionPlanId,
+    cycle: 'monthly' | 'yearly' = 'monthly',
+    cardLast4?: string
+  ) => {
+    let name = 'Formule Découverte (Gratuit)';
+    let price = 0;
+
+    if (planId.startsWith('pro')) {
+      name = cycle === 'yearly' ? 'Formule Pro (Annuel)' : 'Formule Pro (Mensuel)';
+      price = cycle === 'yearly' ? 180 : 19;
+    } else if (planId.startsWith('premium')) {
+      name = cycle === 'yearly' ? 'Formule Domaine (Annuel)' : 'Formule Domaine (Mensuel)';
+      price = cycle === 'yearly' ? 384 : 39;
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+    const renewal = new Date();
+    if (cycle === 'yearly') {
+      renewal.setFullYear(renewal.getFullYear() + 1);
+    } else {
+      renewal.setMonth(renewal.getMonth() + 1);
+    }
+
+    const newSub: import('../types').SubscriptionState = {
+      planId,
+      planName: name,
+      status: 'active',
+      billingCycle: cycle,
+      priceEuro: price,
+      startDate: today,
+      renewalDate: planId === 'free' ? 'Sans engagement' : renewal.toISOString().split('T')[0],
+      paymentMethodLast4: cardLast4 || settings.subscription?.paymentMethodLast4 || '4242'
+    };
+
+    const nextSettings = { ...settings, subscription: newSub };
+    setSettings(nextSettings);
+    saveToFirestore({ settings: nextSettings });
+  };
+
+  const startProTrial = () => {
+    const today = new Date();
+    const trialEnds = new Date();
+    trialEnds.setDate(today.getDate() + 14);
+
+    const newSub: import('../types').SubscriptionState = {
+      planId: 'pro_monthly',
+      planName: 'Formule Pro (Essai Gratuit 14j)',
+      status: 'trialing',
+      billingCycle: 'monthly',
+      priceEuro: 0,
+      startDate: today.toISOString().split('T')[0],
+      renewalDate: trialEnds.toISOString().split('T')[0],
+      trialEndsDate: trialEnds.toISOString().split('T')[0],
+      paymentMethodLast4: 'Carte de test'
+    };
+
+    const nextSettings = { ...settings, subscription: newSub };
+    setSettings(nextSettings);
+    saveToFirestore({ settings: nextSettings });
+  };
+
+  const cancelSubscription = () => {
+    const newSub: import('../types').SubscriptionState = {
+      planId: 'free',
+      planName: 'Formule Découverte (Gratuit)',
+      status: 'active',
+      billingCycle: 'monthly',
+      priceEuro: 0,
+      startDate: new Date().toISOString().split('T')[0],
+      renewalDate: 'Sans engagement'
+    };
+
+    const nextSettings = { ...settings, subscription: newSub };
+    setSettings(nextSettings);
+    saveToFirestore({ settings: nextSettings });
+  };
+
   const addGiftVoucher = (voucherData: Omit<GiftVoucher, 'id'>) => {
     const newVoucher: GiftVoucher = { ...voucherData, id: `gv-${Date.now()}` };
     const next = [newVoucher, ...giftVouchers];
@@ -564,7 +765,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     saveToFirestore({ payments: nextPayments, invoices: nextInvoices });
   };
 
-  // RESET
+  // RESET & CLEAR DEMO
   const resetDemoData = () => {
     setRooms(initialRooms);
     setGuests(initialGuests);
@@ -588,6 +789,75 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
+  const clearDemoDataAndApplyNewParameters = (customSettings?: Partial<EstablishmentSettings>) => {
+    const mergedSettings: EstablishmentSettings = {
+      ...initialSettings,
+      name: customSettings?.name || userProfile?.establishmentName || settings.name || 'Mon Établissement',
+      ownerName: customSettings?.ownerName || userProfile?.displayName || settings.ownerName || 'Gérant',
+      email: customSettings?.email || user?.email || settings.email || initialSettings.email,
+      siret: customSettings?.siret || '',
+      wifiSsid: customSettings?.wifiSsid || '',
+      wifiPassword: customSettings?.wifiPassword || '',
+      iCalFeeds: [],
+      subscription: settings.subscription || {
+        planId: 'free',
+        planName: 'Formule Découverte (Gratuit)',
+        status: 'active',
+        billingCycle: 'monthly',
+        priceEuro: 0,
+        startDate: new Date().toISOString().split('T')[0],
+        renewalDate: 'Sans engagement'
+      }
+    };
+
+    const starterRoom: Room[] = [
+      {
+        id: "room-1",
+        name: "Chambre 1",
+        description: "Première chambre de votre établissement.",
+        capacity: {
+          adults: 2,
+          children: 1,
+          maxTotal: 3
+        },
+        basePrice: 90,
+        seasonalRates: {
+          lowSeason: 80,
+          midSeason: 90,
+          highSeason: 110,
+          weekendExtra: 10
+        },
+        amenities: ["Wifi Gratuit", "Lit Double", "Salle de bain privée", "Climatisation"],
+        photos: ["https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&q=80&w=800"],
+        status: "available",
+        surface: 22,
+        floor: "Rez-de-chaussée"
+      }
+    ];
+
+    setRooms(starterRoom);
+    setGuests([]);
+    setBookings([]);
+    setDailyMeals([]);
+    setInvoices([]);
+    setHousekeeping([]);
+    setSettings(mergedSettings);
+    setGiftVouchers([]);
+    setPayments([]);
+
+    saveToFirestore({
+      rooms: starterRoom,
+      guests: [],
+      bookings: [],
+      dailyMeals: [],
+      invoices: [],
+      housekeeping: [],
+      settings: mergedSettings,
+      giftVouchers: [],
+      payments: []
+    });
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -608,6 +878,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateGuest,
         deleteGuest,
         addBooking,
+        batchImportBookingsAndGuests,
         updateBooking,
         deleteBooking,
         addDailyMeal,
@@ -623,10 +894,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         toggleHousekeepingChecklist,
         addHousekeepingTask,
         updateSettings,
+        updateSubscription,
+        startProTrial,
+        cancelSubscription,
         addGiftVoucher,
         updateGiftVoucherStatus,
         addPaymentRecord,
-        resetDemoData
+        resetDemoData,
+        clearDemoDataAndApplyNewParameters
       }}
     >
       {children}

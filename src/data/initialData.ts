@@ -12,7 +12,7 @@ import {
 
 export const initialSettings: EstablishmentSettings = {
   name: "Domaine du Mas des Lavandes",
-  ownerName: "Sophie & Marc Dubois",
+  ownerName: "Propriétaire",
   address: "1420 Route des Collines, 84220 Gordes",
   phone: "04 90 72 18 40",
   email: "contact@masdeslavandes-gordes.fr",
@@ -26,6 +26,15 @@ export const initialSettings: EstablishmentSettings = {
   wifiPassword: "Provence2026!",
   checkInTime: "16:00",
   checkOutTime: "11:00",
+  subscription: {
+    planId: "free",
+    planName: "Formule Découverte (Gratuit)",
+    status: "active",
+    billingCycle: "monthly",
+    priceEuro: 0,
+    startDate: "2026-08-01",
+    renewalDate: "Accès illimité sans engagement"
+  },
   iCalFeeds: [
     {
       id: "ical-1",
@@ -637,7 +646,7 @@ export const initialHousekeeping: HousekeepingTask[] = [
     date: "2026-08-04",
     taskType: "inspection",
     status: "completed",
-    assignedTo: "Sophie Dubois",
+    assignedTo: "Propriétaire",
     notes: "Chambre prête pour l'accueil.",
     checklist: [
       { id: "c14", label: "Inspection globale et contrôle qualité", completed: true },

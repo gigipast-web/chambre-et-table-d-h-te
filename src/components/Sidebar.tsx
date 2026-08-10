@@ -19,15 +19,17 @@ interface SidebarProps {
   activeTab: string;
   setActiveTab?: (tab: string) => void;
   onTabChange?: (tab: string) => void;
+  onOpenSubscription?: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onTabChange }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onTabChange, onOpenSubscription }) => {
   const handleTabClick = (tabId: string) => {
     if (onTabChange) onTabChange(tabId);
     if (setActiveTab) setActiveTab(tabId);
   };
 
-  const { housekeeping, bookings, dailyMeals } = useApp();
+  const { housekeeping, bookings, dailyMeals, settings } = useApp();
+  const sub = settings.subscription || { planId: 'free', planName: 'Gratuit' };
 
   const pendingCleaning = housekeeping.filter(h => h.status !== 'completed').length;
   const todayStr = "2026-08-04";
@@ -88,14 +90,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onTab
         })}
       </div>
 
-      <div className="p-3 mx-2.5 my-2 bg-stone-800/80 rounded border border-stone-700/60 space-y-1">
-        <div className="flex items-center space-x-1.5 text-emerald-400">
-          <Sparkle className="w-3.5 h-3.5" />
-          <span className="text-[10px] font-bold uppercase tracking-wider">Haute Densité</span>
+      <div className="p-3 mx-2.5 my-2 bg-stone-800/80 rounded border border-stone-700/60 space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-1.5 text-amber-400">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span className="text-[10px] font-bold uppercase tracking-wider">Formule SaaS</span>
+          </div>
+          <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded uppercase ${
+            sub.planId === 'free' ? 'bg-stone-700 text-stone-300' : 'bg-emerald-500 text-stone-900'
+          }`}>
+            {sub.planId === 'free' ? 'Gratuit' : 'Pro ⚡'}
+          </span>
         </div>
-        <p className="text-[11px] text-stone-400 leading-snug">
-          Gestion intégrée gîte & table. Données sauvegardées localement.
+        <p className="text-[11px] text-stone-300 font-medium">
+          {sub.planName}
         </p>
+        <button
+          onClick={onOpenSubscription}
+          className="w-full bg-[#4A6741] hover:bg-[#3d5636] text-white text-[11px] font-bold py-1 px-2 rounded transition cursor-pointer flex items-center justify-center gap-1 shadow-xs"
+        >
+          <CreditCard className="w-3 h-3" />
+          <span>{sub.planId === 'free' ? 'Passer à Pro' : 'Gérer l\'abonnement'}</span>
+        </button>
       </div>
     </aside>
   );

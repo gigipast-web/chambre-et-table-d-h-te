@@ -14,6 +14,7 @@ interface NavbarProps {
   onOpenNewBooking?: () => void;
   onOpenAiEmailModal?: () => void;
   onOpenAiAssistant?: () => void;
+  onOpenSubscription?: () => void;
   activeTab?: string;
   setActiveTab?: (tab: string) => void;
 }
@@ -22,10 +23,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenNewBooking,
   onOpenAiEmailModal,
   onOpenAiAssistant,
+  onOpenSubscription,
   activeTab,
   setActiveTab
 }) => {
   const { settings, rooms, dailyMeals } = useApp();
+  const sub = settings.subscription || { planId: 'free', planName: 'Gratuit' };
   const { user, userProfile, logout } = useAuth();
 
   const occupiedRooms = rooms.filter(r => r.status === 'occupied').length;
@@ -105,6 +108,22 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Sparkles className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">IA Concierge</span>
             </button>
+
+            {onOpenSubscription && (
+              <button
+                onClick={onOpenSubscription}
+                className={`flex items-center space-x-1 font-bold px-2.5 py-1 rounded text-xs transition-colors cursor-pointer border ${
+                  sub.planId === 'free'
+                    ? 'bg-stone-800 hover:bg-stone-700 text-amber-400 border-amber-500/40'
+                    : 'bg-emerald-800/80 hover:bg-emerald-700 text-white border-emerald-500/50'
+                }`}
+                title="Offre et abonnement SaaS"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span className="hidden sm:inline">{sub.planId === 'free' ? 'Plan Gratuit (Offre Pro ⚡)' : 'Plan Pro ⚡'}</span>
+                <span className="sm:hidden">{sub.planId === 'free' ? 'Gratuit' : 'Pro ⚡'}</span>
+              </button>
+            )}
 
             {user && (
               <div className="flex items-center space-x-1.5 pl-2 border-l border-stone-700 text-xs">

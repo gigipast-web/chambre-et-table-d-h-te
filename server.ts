@@ -2,6 +2,22 @@ import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
+import Stripe from "stripe";
+
+let stripeClient: Stripe | null = null;
+
+function getStripeClient(): Stripe | null {
+  const secretKey = process.env.STRIPE_SECRET_KEY;
+  if (!secretKey) {
+    return null;
+  }
+  if (!stripeClient) {
+    stripeClient = new Stripe(secretKey, {
+      apiVersion: "2025-02-24.acacia" as any,
+    });
+  }
+  return stripeClient;
+}
 
 async function startServer() {
   const app = express();
@@ -28,6 +44,67 @@ async function startServer() {
   // Health check
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
+  });
+
+  // Stripe status endpoint
+  app.get("/api/stripe/config", (req, res) => {
+    const stripe = getStripeClient();
+    res.json({
+      configured: !!stripe,
+      publishableKeyPresent: !!process.env.VITE_STRIPE_PUBLISHABLE_KEY,
+      publishableKey: process.env.VITE_STRIPE_PUBLISHABLE_KEY || null,
+    });
+  });
+
+  // Create Stripe Checkout Session
+  app.post("/api/stripe/create-checkout-session", async (req, res) => {
+    try {
+      const stripe = getStripeClient();
+      if (!stripe) {
+        return res.status(400).json({
+          success: false,
+          error: "Stripe n'est pas encore configuré avec STRIPE_SECRET_KEY. Mode simulation actif.",
+          simulated: true,
+        });
+      }
+
+      const { planId, billingCycle, successUrl, cancelUrl } = req.body;
+      let amountEuro = 19;
+      let planName = "Formule Pro Mensuelle";
+
+      if (planId?.startsWith("pro")) {
+        amountEuro = billingCycle === "yearly" ? 180 : 19;
+        planName = billingCycle === "yearly" ? "Formule Pro Annuelle" : "Formule Pro Mensuelle";
+      } else if (planId?.startsWith("premium")) {
+        amountEuro = billingCycle === "yearly" ? 384 : 39;
+        planName = billingCycle === "yearly" ? "Formule Domaine Annuelle" : "Formule Domaine Mensuelle";
+      }
+
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        mode: "payment",
+        line_items: [
+          {
+            price_data: {
+              currency: "eur",
+              product_data: {
+                name: planName,
+                description: `Abonnement SaaS Mas des Lavandes - ${planName}`,
+              },
+              unit_amount: amountEuro * 100, // cents
+            },
+            quantity: 1,
+          },
+        ],
+        success_url: successUrl || `${process.env.APP_URL || "http://localhost:3000"}?payment=success&plan=${planId}`,
+        cancel_url: cancelUrl || `${process.env.APP_URL || "http://localhost:3000"}?payment=canceled`,
+      });
+
+      res.json({ success: true, url: session.url, sessionId: session.id });
+    } catch (error: any) {
+      console.error("Error creating Stripe session:", error);
+      res.status(500).json({ success: false, error: error.message });
+    }
   });
 
   // AI Menu Generator for Table d'Hôtes

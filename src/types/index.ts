@@ -159,6 +159,30 @@ export interface ICalFeed {
   lastSync?: string;
 }
 
+export type SubscriptionPlanId = 'free' | 'pro_monthly' | 'pro_yearly' | 'premium_monthly' | 'premium_yearly';
+
+export interface SubscriptionPlanLimits {
+  maxRooms: number;
+  maxBookingsPerMonth: number;
+  allowIcalSync: boolean;
+  allowAiAssistant: boolean;
+  allowAdvancedInvoicing: boolean;
+  allowExportData: boolean;
+  allowMultiUser: boolean;
+}
+
+export interface SubscriptionState {
+  planId: SubscriptionPlanId;
+  planName: string;
+  status: 'active' | 'trialing' | 'canceled';
+  billingCycle: 'monthly' | 'yearly';
+  priceEuro: number;
+  startDate: string;
+  renewalDate: string;
+  trialEndsDate?: string;
+  paymentMethodLast4?: string;
+}
+
 export interface EstablishmentSettings {
   name: string;
   ownerName: string;
@@ -176,6 +200,7 @@ export interface EstablishmentSettings {
   checkInTime: string;
   checkOutTime: string;
   iCalFeeds: ICalFeed[];
+  subscription?: SubscriptionState;
 }
 
 export interface GiftVoucher {

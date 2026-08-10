@@ -13,15 +13,61 @@ import {
   Clock,
   Plus,
   Trash2,
-  RefreshCw
+  RefreshCw,
+  Smartphone,
+  Download,
+  ExternalLink,
+  ShieldCheck,
+  CheckCircle2,
+  CreditCard,
+  Zap,
+  Sparkles
 } from 'lucide-react';
 import { ICalFeed } from '../types';
 
-export const SettingsView: React.FC = () => {
-  const { settings, updateSettings, rooms } = useApp();
+interface SettingsViewProps {
+  onOpenSubscription?: () => void;
+}
+
+export const SettingsView: React.FC<SettingsViewProps> = ({ onOpenSubscription }) => {
+  const { settings, updateSettings, rooms, bookings, clearDemoDataAndApplyNewParameters } = useApp();
   const [formData, setFormData] = useState(settings);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [copiedIcal, setCopiedIcal] = useState(false);
+
+  // PWA Install Prompt state
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isPwaInstalled, setIsPwaInstalled] = useState(false);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setIsPwaInstalled(true);
+    }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallPwa = async () => {
+    if (!deferredPrompt) {
+      alert("L'application est déjà installée ou votre navigateur ne supporte pas le prompt d'installation direct. Vous pouvez aussi choisir 'Ajouter à l'écran d'accueil' dans le menu de votre navigateur.");
+      return;
+    }
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setIsPwaInstalled(true);
+    }
+    setDeferredPrompt(null);
+  };
 
   // New iCal Feed Form
   const [newFeedName, setNewFeedName] = useState('');
@@ -54,6 +100,14 @@ export const SettingsView: React.FC = () => {
     updateSettings(updated);
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3500);
+  };
+
+  const handleClearDemoData = () => {
+    if (window.confirm("Voulez-vous supprimer toutes les données de démonstration fictives (réservations, clients et repas d'exemple du Mas des Lavandes) et appliquer vos propres paramètres d'établissement ?")) {
+      clearDemoDataAndApplyNewParameters(formData);
+      setSavedSuccess(true);
+      setTimeout(() => setSavedSuccess(false), 3500);
+    }
   };
 
   const icalExportUrl = `${window.location.origin}/api/ical/export.ics`;
@@ -421,16 +475,206 @@ export const SettingsView: React.FC = () => {
           </div>
         </div>
 
-        {/* Save button bar */}
-        <div className="flex items-center justify-between pt-2">
-          {savedSuccess ? (
-            <span className="text-emerald-700 font-bold text-xs flex items-center gap-1.5">
-              <Check className="w-4 h-4 text-emerald-600" />
-              Paramètres sauvegardés avec succès !
+        {/* Application Mobile (PWA) Section */}
+        <div className="bg-white rounded-lg shadow-sm border border-stone-200 p-4 sm:p-5">
+          <div className="flex items-center justify-between pb-3 border-b border-stone-200">
+            <div className="flex items-center space-x-2">
+              <div className="p-1.5 bg-emerald-100 text-emerald-800 rounded">
+                <Smartphone className="w-4 h-4" />
+              </div>
+              <div>
+                <h2 className="font-bold text-stone-900 text-sm">Application Mobile (PWA)</h2>
+                <p className="text-[11px] text-stone-500">Installation directe sur smartphone, tablette & ordinateur</p>
+              </div>
+            </div>
+            <span className="bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded border border-emerald-200 flex items-center gap-1">
+              <ShieldCheck className="w-3 h-3 text-emerald-600" />
+              PWA Prête
             </span>
-          ) : (
-            <span className="text-stone-400 text-[11px]">N'oubliez pas d'enregistrer vos modifications.</span>
-          )}
+          </div>
+
+          <div className="mt-4">
+            {/* Direct PWA Install Action */}
+            <div className="bg-stone-50 p-3.5 rounded border border-stone-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 className="font-bold text-stone-800 text-xs flex items-center gap-1.5">
+                  <Smartphone className="w-3.5 h-3.5 text-[#4A6741]" />
+                  Installation sur votre appareil
+                </h3>
+                <p className="text-[11px] text-stone-600 mt-1 leading-relaxed">
+                  L'application est configurée comme une PWA complète avec mode hors-ligne, raccourci écran d'accueil et Service Worker.
+                </p>
+              </div>
+
+              <div className="shrink-0 sm:w-auto w-full">
+                {isPwaInstalled ? (
+                  <div className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-2 rounded flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    Application déjà installée !
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleInstallPwa}
+                    className="w-full sm:w-auto bg-[#4A6741] hover:bg-[#3d5636] text-white font-bold py-2 px-4 rounded text-xs transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Installer sur cet appareil</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Technical Checklist Badges */}
+          <div className="mt-3 pt-3 border-t border-stone-200 grid grid-cols-2 sm:grid-cols-3 gap-2 text-[10px]">
+            <div className="flex items-center gap-1 text-emerald-800 font-medium">
+              <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+              <span>Manifest Web V3 Complété</span>
+            </div>
+            <div className="flex items-center gap-1 text-emerald-800 font-medium">
+              <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+              <span>Service Worker Offline (sw.js)</span>
+            </div>
+            <div className="flex items-center gap-1 text-emerald-800 font-medium">
+              <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+              <span>Icônes Maskable 192 & 512px</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Subscription & SaaS Plan Section */}
+        <div className="bg-white rounded-lg shadow-sm border border-stone-200 p-4 sm:p-5">
+          <div className="flex items-center justify-between pb-3 border-b border-stone-200">
+            <div className="flex items-center space-x-2">
+              <div className="p-1.5 bg-amber-100 text-amber-900 rounded">
+                <CreditCard className="w-4 h-4" />
+              </div>
+              <div>
+                <h2 className="font-bold text-stone-900 text-sm">Abonnement SaaS & Formule Active</h2>
+                <p className="text-[11px] text-stone-500">Gestion de votre plan Gratuit / Pro / Domaine et de vos quotas d'utilisation</p>
+              </div>
+            </div>
+            <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded border flex items-center gap-1 ${
+              settings.subscription?.planId === 'free'
+                ? 'bg-stone-100 text-stone-700 border-stone-300'
+                : 'bg-emerald-50 text-emerald-800 border-emerald-300'
+            }`}>
+              <Zap className="w-3 h-3 text-amber-500 fill-amber-400" />
+              {settings.subscription?.planName || 'Formule Découverte (Gratuit)'}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            {/* Current Status Box */}
+            <div className="bg-stone-50 p-3.5 rounded border border-stone-200 flex flex-col justify-between space-y-2">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500">Offre souscrite</span>
+                <h3 className="font-bold text-stone-900 text-sm mt-0.5 font-serif">
+                  {settings.subscription?.planName || 'Formule Découverte'}
+                </h3>
+                <p className="text-[11px] text-stone-600 mt-1">
+                  Prix: <strong>{settings.subscription?.priceEuro === 0 ? 'Gratuit (0 €)' : `${settings.subscription?.priceEuro} €`}</strong>
+                </p>
+                <p className="text-[11px] text-stone-500">
+                  Renouvellement: <strong>{settings.subscription?.renewalDate || 'Sans engagement'}</strong>
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={onOpenSubscription}
+                className="w-full bg-[#4A6741] hover:bg-[#3d5636] text-white font-bold py-1.5 px-3 rounded text-xs transition cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                <span>{settings.subscription?.planId === 'free' ? 'Passer à la Formule Pro' : 'Gérer ou changer de formule'}</span>
+              </button>
+            </div>
+
+            {/* Rooms Quota Usage Box */}
+            <div className="bg-stone-50 p-3.5 rounded border border-stone-200 space-y-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500">Quota Chambres / Hébergements</span>
+              <div className="flex items-baseline justify-between">
+                <span className="text-xl font-bold font-serif text-stone-900">
+                  {rooms.length} <span className="text-xs font-sans font-normal text-stone-500">
+                    / {settings.subscription?.planId === 'free' ? '5 max (Gratuit)' : 'Illimité (Pro)'}
+                  </span>
+                </span>
+                <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
+                  settings.subscription?.planId === 'free' && rooms.length >= 5
+                    ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                    : 'bg-emerald-100 text-emerald-800'
+                }`}>
+                  {settings.subscription?.planId === 'free' && rooms.length >= 5 ? 'Limite atteinte' : 'Conforme'}
+                </span>
+              </div>
+              {/* Progress bar */}
+              <div className="w-full bg-stone-200 h-2 rounded-full overflow-hidden">
+                <div
+                  className="bg-[#4A6741] h-full transition-all duration-300"
+                  style={{ width: settings.subscription?.planId === 'free' ? `${Math.min(100, (rooms.length / 5) * 100)}%` : '100%' }}
+                ></div>
+              </div>
+              <p className="text-[10px] text-stone-500">
+                {settings.subscription?.planId === 'free' ? 'Formule gratuite limitée à 5 chambres.' : 'Ajoutez autant de chambres que nécessaire.'}
+              </p>
+            </div>
+
+            {/* Features Included Box */}
+            <div className="bg-stone-50 p-3.5 rounded border border-stone-200 space-y-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500">Inclus dans votre offre</span>
+              <ul className="text-[11px] text-stone-700 space-y-1">
+                <li className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>Planning interactif & Facturation PDF</span>
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>Application PWA installable sur Mobile</span>
+                </li>
+                <li className={`flex items-center gap-1.5 ${settings.subscription?.planId === 'free' ? 'text-stone-400' : 'text-stone-800 font-medium'}`}>
+                  {settings.subscription?.planId === 'free' ? (
+                    <span className="w-3.5 h-3.5 rounded-full border border-stone-300 inline-block shrink-0" />
+                  ) : (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  )}
+                  <span>Sync iCal Airbnb / Booking {settings.subscription?.planId === 'free' && '(Option Pro)'}</span>
+                </li>
+                <li className={`flex items-center gap-1.5 ${settings.subscription?.planId === 'free' ? 'text-stone-400' : 'text-stone-800 font-medium'}`}>
+                  {settings.subscription?.planId === 'free' ? (
+                    <span className="w-3.5 h-3.5 rounded-full border border-stone-300 inline-block shrink-0" />
+                  ) : (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  )}
+                  <span>Générateur de Menus & Recettes IA {settings.subscription?.planId === 'free' && '(Option Pro)'}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Save & Reset button bar */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleClearDemoData}
+              className="flex items-center space-x-1.5 bg-stone-200 hover:bg-amber-100 text-stone-700 hover:text-amber-900 border border-stone-300 hover:border-amber-400 font-bold px-3 py-2 rounded text-xs transition cursor-pointer"
+              title="Efface les réservations et clients de démonstration pour démarrer avec vos paramètres réels"
+            >
+              <RefreshCw className="w-3.5 h-3.5 text-amber-600" />
+              <span>Remplacer le mode Démo par mes paramètres</span>
+            </button>
+
+            {savedSuccess ? (
+              <span className="text-emerald-700 font-bold text-xs flex items-center gap-1.5">
+                <Check className="w-4 h-4 text-emerald-600" />
+                Opération effectuée avec succès !
+              </span>
+            ) : (
+              <span className="hidden sm:inline text-stone-400 text-[11px]">Enregistrez vos modifications.</span>
+            )}
+          </div>
 
           <button
             type="submit"

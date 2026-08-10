@@ -23,6 +23,7 @@ import { NewBookingModal } from './components/NewBookingModal';
 import { NewGuestModal } from './components/NewGuestModal';
 import { AiMenuModal } from './components/AiMenuModal';
 import { AiEmailModal } from './components/AiEmailModal';
+import { SubscriptionModal } from './components/SubscriptionModal';
 
 function MainAppLayout() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -32,6 +33,7 @@ function MainAppLayout() {
   const [showNewGuestModal, setShowNewGuestModal] = useState(false);
   const [showAiMenuModal, setShowAiMenuModal] = useState(false);
   const [showAiEmailModal, setShowAiEmailModal] = useState(false);
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
 
   const renderActiveView = () => {
     switch (activeTab) {
@@ -49,7 +51,7 @@ function MainAppLayout() {
           />
         );
       case 'rooms':
-        return <RoomsView />;
+        return <RoomsView onOpenSubscription={() => setShowSubscriptionModal(true)} />;
       case 'guests':
         return (
           <GuestsView
@@ -69,7 +71,7 @@ function MainAppLayout() {
       case 'analytics':
         return <AnalyticsView />;
       case 'settings':
-        return <SettingsView />;
+        return <SettingsView onOpenSubscription={() => setShowSubscriptionModal(true)} />;
       default:
         return (
           <DashboardView
@@ -86,6 +88,7 @@ function MainAppLayout() {
       <Navbar
         onOpenNewBooking={() => setShowNewBookingModal(true)}
         onOpenAiEmailModal={() => setShowAiEmailModal(true)}
+        onOpenSubscription={() => setShowSubscriptionModal(true)}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
       />
@@ -93,11 +96,24 @@ function MainAppLayout() {
       {/* Main Container Layout */}
       <div className="flex-1 max-w-[1400px] w-full mx-auto px-2 sm:px-4 py-3 flex gap-3">
         {/* Desktop Sidebar (Left) */}
-        <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+        <Sidebar
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          onOpenSubscription={() => setShowSubscriptionModal(true)}
+        />
 
         {/* Main Workspace Area (Right) */}
-        <main className="flex-1 min-w-0">
-          {renderActiveView()}
+        <main className="flex-1 min-w-0 flex flex-col justify-between">
+          <div>
+            {renderActiveView()}
+          </div>
+
+          {/* Footer Credit */}
+          <footer className="mt-8 pt-4 pb-2 border-t border-stone-200 text-center text-xs text-stone-500 mb-16 md:mb-2">
+            <p className="font-medium">
+              Créé par <a href="tel:0681535770" className="font-bold text-stone-800 hover:text-[#4A6741] hover:underline transition">"l'escapade de jos 0681535770"</a>
+            </p>
+          </footer>
         </main>
       </div>
 
@@ -119,6 +135,10 @@ function MainAppLayout() {
 
       {showAiEmailModal && (
         <AiEmailModal onClose={() => setShowAiEmailModal(false)} />
+      )}
+
+      {showSubscriptionModal && (
+        <SubscriptionModal onClose={() => setShowSubscriptionModal(false)} />
       )}
     </div>
   );

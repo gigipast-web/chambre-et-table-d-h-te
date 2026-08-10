@@ -243,8 +243,11 @@ export const AuthScreen: React.FC = () => {
         </div>
 
         {/* Footer */}
-        <div className="bg-stone-50 p-3 text-center border-t border-stone-200 text-[11px] text-stone-500">
-          Données synchronisées en temps réel via Firebase Firestore
+        <div className="bg-stone-50 p-3 text-center border-t border-stone-200 text-[11px] text-stone-500 space-y-1">
+          <div>Données synchronisées en temps réel via Firebase Firestore</div>
+          <div className="text-stone-600 font-medium pt-1 border-t border-stone-200/60">
+            Créé par <a href="tel:0681535770" className="font-bold text-stone-800 hover:text-[#4A6741] hover:underline">"l'escapade de jos 0681535770"</a>
+          </div>
         </div>
       </div>
     </div>

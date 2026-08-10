@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Booking, BookingStatus, BookingSource } from '../types';
+import { CsvImportModal } from './CsvImportModal';
 import {
   CalendarDays,
   Plus,
@@ -18,7 +19,8 @@ import {
   ExternalLink,
   Sparkles,
   Trash2,
-  X
+  X,
+  FileSpreadsheet
 } from 'lucide-react';
 
 interface BookingsViewProps {
@@ -37,6 +39,7 @@ export const BookingsView: React.FC<BookingsViewProps> = ({
   const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   const [calendarView, setCalendarView] = useState<'month' | 'week'>('month');
+  const [showCsvModal, setShowCsvModal] = useState(false);
 
   // Filter logic
   const filteredBookings = bookings.filter(b => {
@@ -114,6 +117,15 @@ export const BookingsView: React.FC<BookingsViewProps> = ({
               Grille Calendrier
             </button>
           </div>
+
+          <button
+            onClick={() => setShowCsvModal(true)}
+            className="flex items-center space-x-1.5 bg-amber-600 hover:bg-amber-500 text-white font-medium px-3 py-1.5 rounded text-xs transition cursor-pointer shadow-2xs"
+            title="Importer des réservations depuis un fichier Excel ou CSV"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5 text-amber-200" />
+            <span>Importer CSV / Excel</span>
+          </button>
 
           <button
             onClick={onOpenNewBooking}
@@ -384,6 +396,12 @@ export const BookingsView: React.FC<BookingsViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* CSV / Excel Import Modal */}
+      <CsvImportModal
+        isOpen={showCsvModal}
+        onClose={() => setShowCsvModal(false)}
+      />
     </div>
   );
 };

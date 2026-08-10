@@ -39,7 +39,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     if (setActiveTab) setActiveTab(tab);
   };
 
-  const { rooms, bookings, dailyMeals, payments, housekeeping } = useApp();
+  const { rooms, bookings, dailyMeals, payments, housekeeping, settings } = useApp();
 
   const todayStr = "2026-08-04";
 
@@ -83,7 +83,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <span className="text-emerald-400 font-semibold">Mardi 4 Août 2026</span>
           </div>
           <h1 className="text-xl font-bold tracking-tight text-white">
-            Bonjour Sophie & Marc
+            Bonjour {settings.ownerName || 'Propriétaire'}
           </h1>
           <p className="text-xs text-stone-300 mt-0.5">
             Voici le résumé quotidien de votre maison d'hôtes et de votre table d'hôtes ce soir.
