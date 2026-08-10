@@ -43,7 +43,14 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch Event - Stale-while-revalidate for static assets, network-first for API requests
+// Listen for messages from client
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
+// Fetch Event - Intercept network requests for offline support (PWABuilder compliant)
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
@@ -94,10 +101,32 @@ self.addEventListener('fetch', (event) => {
         })
         .catch(() => {
           // If HTML navigation request fails and no cache, fallback to /index.html
-          if (event.request.headers.get('accept')?.includes('text/html')) {
+          if (event.request.mode === 'navigate' || event.request.headers.get('accept')?.includes('text/html')) {
             return caches.match('/index.html') || caches.match('/');
           }
         });
     })
   );
 });
+
+// Background Sync Listener (PWA Builder feature)
+self.addEventListener('sync', (event) => {
+  console.log('[Service Worker] Background sync event:', event.tag);
+});
+
+// Push Notification Listener (PWA Builder feature)
+self.addEventListener('push', (event) => {
+  if (event.data) {
+    const data = event.data.json();
+    const options = {
+      body: data.body || 'Nouvelle notification de réservation',
+      icon: '/icon-192.png',
+      badge: '/favicon-32x32.png',
+      data: { url: data.url || '/' }
+    };
+    event.waitUntil(
+      self.registration.showNotification(data.title || 'Gestion Gîte', options)
+    );
+  }
+});
+
