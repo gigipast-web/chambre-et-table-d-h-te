@@ -11,7 +11,7 @@ export const AiMenuModal: React.FC<AiMenuModalProps> = ({ onClose }) => {
 
   const [theme, setTheme] = useState("Gastronomie Provençale & Produits du Terroir");
   const [dietaryConstraints, setDietaryConstraints] = useState("1 Sans Gluten, Produits de saison uniquement");
-  const [date, setDate] = useState("2026-08-04");
+  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
 
   const [loading, setLoading] = useState(false);
   const [generatedMenu, setGeneratedMenu] = useState<{

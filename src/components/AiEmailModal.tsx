@@ -38,7 +38,8 @@ export const AiEmailModal: React.FC<AiEmailModalProps> = ({ onClose }) => {
       });
       const data = await res.json();
       if (data.success) {
-        setEmailText(data.emailContent);
+        const text = data.emailContent || (typeof data.email === 'string' ? data.email : (data.email?.body ? `${data.email.subject ? 'Objet : ' + data.email.subject + '\n\n' : ''}${data.email.body}` : JSON.stringify(data.email)));
+        setEmailText(text);
       } else {
         alert("Impossible de générer l'e-mail.");
       }

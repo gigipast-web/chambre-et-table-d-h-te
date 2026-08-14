@@ -68,6 +68,7 @@ export const initialRooms: Room[] = [
       highSeason: 155,
       weekendExtra: 15
     },
+    fraisDiversParSejour: 25,
     amenities: ["Wi-Fi", "Climatisation", "Vue Jardin", "Lit King Size", "Terrasse Privative", "Machine Nespresso"],
     photos: [
       "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1000&q=80",
@@ -89,6 +90,7 @@ export const initialRooms: Room[] = [
       highSeason: 140,
       weekendExtra: 10
     },
+    fraisDiversParSejour: 20,
     amenities: ["Wi-Fi", "Climatisation", "Douche Italienne", "Lit Queen Size", "Sèche-cheveux"],
     photos: [
       "https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=1000&q=80"
@@ -109,6 +111,7 @@ export const initialRooms: Room[] = [
       highSeason: 220,
       weekendExtra: 25
     },
+    fraisDiversParSejour: 35,
     amenities: ["Wi-Fi", "Climatisation", "Baignoire Îlot", "Balcon Panoramique", "Lit Super King", "Coin Salon", "Mini-bar"],
     photos: [
       "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=1000&q=80"
@@ -129,6 +132,7 @@ export const initialRooms: Room[] = [
       highSeason: 145,
       weekendExtra: 10
     },
+    fraisDiversParSejour: 20,
     amenities: ["Wi-Fi", "Climatisation", "Accès PMR", "Lit Modulable", "Terrasse Ombragée"],
     photos: [
       "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=1000&q=80"
@@ -149,6 +153,7 @@ export const initialRooms: Room[] = [
       highSeason: 200,
       weekendExtra: 20
     },
+    fraisDiversParSejour: 40,
     amenities: ["Wi-Fi", "Kitchenette équipée", "Duplex", "Climatisation", "Entrée Indépendante", "Barbecue Privé"],
     photos: [
       "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=1000&q=80"

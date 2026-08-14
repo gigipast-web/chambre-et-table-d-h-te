@@ -24,7 +24,7 @@ interface TableDhotesViewProps {
 export const TableDhotesView: React.FC<TableDhotesViewProps> = ({ onOpenAiMenuModal }) => {
   const { dailyMeals, addDailyMeal, updateDailyMeal, deleteDailyMeal, addGuestToMeal, removeGuestFromMeal } = useApp();
 
-  const [selectedDate, setSelectedDate] = useState<string>("2026-08-04");
+  const [selectedDate, setSelectedDate] = useState<string>(() => dailyMeals[0]?.date || new Date().toISOString().split('T')[0]);
   const [showAddGuestModal, setShowAddGuestModal] = useState(false);
   const [showKitchenPrintView, setShowKitchenPrintView] = useState(false);
 

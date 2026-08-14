@@ -21,8 +21,12 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({ onClose }) => 
   const [newGuestPhone, setNewGuestPhone] = useState('');
 
   // Booking fields
-  const [checkIn, setCheckIn] = useState('2026-08-10');
-  const [checkOut, setCheckOut] = useState('2026-08-13');
+  const [checkIn, setCheckIn] = useState(() => new Date().toISOString().split('T')[0]);
+  const [checkOut, setCheckOut] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 3);
+    return d.toISOString().split('T')[0];
+  });
   const [numberOfAdults, setNumberOfAdults] = useState(2);
   const [numberOfChildren, setNumberOfChildren] = useState(0);
   const [source, setSource] = useState<BookingSource>('direct');
@@ -39,10 +43,11 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({ onClose }) => 
 
   // Financial calculations
   const roomPricePerNight = selectedRoom?.basePrice || 120;
+  const miscFeePerStay = selectedRoom?.fraisDiversParSejour || 0;
   const roomTotal = roomPricePerNight * totalNights;
   const tableTotal = tableDhotesOption ? tableDhotesMealsCount * 32 : 0;
   const touristTaxTotal = numberOfAdults * totalNights * settings.touristTaxPerAdultPerNight;
-  const grandTotal = roomTotal + tableTotal + touristTaxTotal;
+  const grandTotal = roomTotal + tableTotal + touristTaxTotal + miscFeePerStay;
   const suggestedDeposit = Math.round(grandTotal * (settings.depositPercentage / 100));
 
   const [depositPaid, setDepositPaid] = useState<number>(suggestedDeposit);
@@ -99,6 +104,7 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({ onClose }) => 
       tableDhotesOption,
       tableDhotesMealsCount: tableDhotesOption ? tableDhotesMealsCount : 0,
       tableDhotesTotal: tableTotal,
+      extrasTotal: miscFeePerStay,
       touristTaxTotal,
       totalAmount: grandTotal,
       depositPaid,
@@ -299,6 +305,12 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({ onClose }) => 
               <div className="flex justify-between items-center text-[11px]">
                 <span>Table d'hôtes ({tableDhotesMealsCount} repas) :</span>
                 <span className="font-mono font-bold">{tableTotal} €</span>
+              </div>
+            )}
+            {miscFeePerStay > 0 && (
+              <div className="flex justify-between items-center text-[11px] text-amber-300">
+                <span>Frais divers (ménage/service par séjour) :</span>
+                <span className="font-mono font-bold">+{miscFeePerStay} €</span>
               </div>
             )}
             <div className="flex justify-between items-center text-[11px] text-stone-400">

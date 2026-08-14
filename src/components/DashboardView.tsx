@@ -41,7 +41,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   const { rooms, bookings, dailyMeals, payments, housekeeping, settings } = useApp();
 
-  const todayStr = "2026-08-04";
+  const todayStr = new Date().toISOString().split('T')[0];
+  const formattedToday = new Date().toLocaleDateString('fr-FR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
 
   // Metrics calculation
   const totalRooms = rooms.length;
@@ -80,7 +86,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="flex items-center space-x-2 text-stone-400 text-xs font-mono font-medium uppercase tracking-wider mb-0.5">
             <span>Aujourd'hui</span>
             <span>•</span>
-            <span className="text-emerald-400 font-semibold">Mardi 4 Août 2026</span>
+            <span className="text-emerald-400 font-semibold capitalize">{formattedToday}</span>
           </div>
           <h1 className="text-xl font-bold tracking-tight text-white">
             Bonjour {settings.ownerName || 'Propriétaire'}

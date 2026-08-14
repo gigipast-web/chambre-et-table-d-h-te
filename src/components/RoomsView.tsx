@@ -114,6 +114,7 @@ export const RoomsView: React.FC<RoomsViewProps> = ({ onOpenSubscription }) => {
     capacity: { adults: 2, children: 1, maxTotal: 3 },
     basePrice: 120,
     seasonalRates: { lowSeason: 100, midSeason: 120, highSeason: 150, weekendExtra: 15 },
+    fraisDiversParSejour: 20,
     amenities: ['Wi-Fi Gratuit', 'Grand lit (160x200)', 'Climatisation'],
     photos: ['https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1000&q=80'],
     status: 'available',
@@ -352,6 +353,14 @@ export const RoomsView: React.FC<RoomsViewProps> = ({ onOpenSubscription }) => {
                     <strong className="text-emerald-950 font-mono">{room.seasonalRates.highSeason} €</strong>
                   </div>
                 </div>
+
+                {/* Frais divers par séjour */}
+                <div className="pt-1.5 border-t border-stone-200 flex items-center justify-between text-[10px]">
+                  <span className="text-stone-600 font-medium">Frais divers (ménage/service) :</span>
+                  <strong className="text-amber-900 font-mono font-bold bg-amber-100/80 px-1.5 py-0.5 rounded border border-amber-200">
+                    {room.fraisDiversParSejour !== undefined ? `${room.fraisDiversParSejour} € / séjour` : '0 € / séjour'}
+                  </strong>
+                </div>
               </div>
 
               {/* Amenities Badges */}
@@ -490,6 +499,35 @@ export const RoomsView: React.FC<RoomsViewProps> = ({ onOpenSubscription }) => {
                     className="w-full p-2 bg-stone-50 border border-stone-200 rounded-xl"
                   />
                 </div>
+              </div>
+
+              {/* FRAIS DIVERS PAR SÉJOUR */}
+              <div className="bg-amber-50/80 p-3 rounded-xl border border-amber-200">
+                <div className="flex items-center justify-between mb-1">
+                  <label className="font-bold text-amber-950 text-xs flex items-center gap-1.5">
+                    <Tag className="w-3.5 h-3.5 text-amber-700" />
+                    <span>Frais divers par séjour (€)</span>
+                  </label>
+                  <span className="text-[10px] text-amber-800 font-medium">Forfait unique par réservation</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={0}
+                    step={1}
+                    placeholder="20"
+                    value={newRoomData.fraisDiversParSejour ?? 0}
+                    onChange={e => setNewRoomData({
+                      ...newRoomData,
+                      fraisDiversParSejour: parseFloat(e.target.value) || 0
+                    })}
+                    className="w-32 p-2 bg-white border border-amber-300 rounded-lg text-stone-900 font-bold font-mono text-xs focus:ring-1 focus:ring-amber-500"
+                  />
+                  <span className="text-xs text-amber-900 font-semibold">€ par séjour</span>
+                </div>
+                <p className="text-[10px] text-amber-900/80 mt-1 leading-snug">
+                  Frais fixes appliqués automatiquement à chaque séjour dans cette chambre (ménage, blanchisserie, consommables, frais de service).
+                </p>
               </div>
 
               {/* OPTIONS & EQUIPEMENTS DE LA CHAMBRE */}
@@ -760,6 +798,35 @@ export const RoomsView: React.FC<RoomsViewProps> = ({ onOpenSubscription }) => {
                     className="w-full p-2 bg-stone-50 border border-stone-200 rounded-xl"
                   />
                 </div>
+              </div>
+
+              {/* FRAIS DIVERS PAR SÉJOUR */}
+              <div className="bg-amber-50/80 p-3 rounded-xl border border-amber-200">
+                <div className="flex items-center justify-between mb-1">
+                  <label className="font-bold text-amber-950 text-xs flex items-center gap-1.5">
+                    <Tag className="w-3.5 h-3.5 text-amber-700" />
+                    <span>Frais divers par séjour (€)</span>
+                  </label>
+                  <span className="text-[10px] text-amber-800 font-medium">Forfait unique par réservation</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={0}
+                    step={1}
+                    placeholder="20"
+                    value={editingRoom.fraisDiversParSejour ?? 0}
+                    onChange={e => setEditingRoom({
+                      ...editingRoom,
+                      fraisDiversParSejour: parseFloat(e.target.value) || 0
+                    })}
+                    className="w-32 p-2 bg-white border border-amber-300 rounded-lg text-stone-900 font-bold font-mono text-xs focus:ring-1 focus:ring-amber-500"
+                  />
+                  <span className="text-xs text-amber-900 font-semibold">€ par séjour</span>
+                </div>
+                <p className="text-[10px] text-amber-900/80 mt-1 leading-snug">
+                  Frais fixes appliqués automatiquement à chaque séjour dans cette chambre (ménage, blanchisserie, consommables, frais de service).
+                </p>
               </div>
 
               {/* OPTIONS & EQUIPEMENTS DE LA CHAMBRE */}

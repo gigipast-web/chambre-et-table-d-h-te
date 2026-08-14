@@ -16,6 +16,7 @@ export interface Room {
     highSeason: number;
     weekendExtra: number;
   };
+  fraisDiversParSejour?: number; // Frais divers fixes par séjour (€)
   amenities: string[];
   photos: string[];
   status: RoomStatus;

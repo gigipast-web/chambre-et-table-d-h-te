@@ -23,6 +23,17 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
+  // Enable CORS & open headers for PWA crawlers and PWABuilder
+  app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+    if (req.method === "OPTIONS") {
+      return res.sendStatus(200);
+    }
+    next();
+  });
+
   app.use(express.json());
 
   // Initialize Gemini AI Client safely
@@ -133,7 +144,7 @@ Format de réponse souhaité (en JSON strict avec les clés suivantes) :
 Réponds UNIQUEMENT avec l'objet JSON valide sans blocs de code markdown.`;
 
       const response = await ai.models.generateContent({
-        model: "gemini-3.6-flash",
+        model: "gemini-2.5-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -157,7 +168,7 @@ Réponds UNIQUEMENT avec l'objet JSON valide sans blocs de code markdown.`;
 
       const prompt = `Tu es le propriétaire chaleureux et attentionné d'une maison d'hôtes de charme en France (Domaine du Mas des Lavandes à Gordes).
 Rédige un courriel en français pour le client ${guestName}.
-Type de courriel : ${type === "welcome" ? "E-mail de bienvenue et consignes d'arrivée (J-2)" : "Confirmation de réservation"}.
+Type de courriel : ${type === "welcome" ? "E-mail de bienvenue et consignes d'arrivée (J-2)" : type === "thank_you" ? "Remerciements après séjour et demande d'avis" : "Confirmation de réservation"}.
 Détails :
 - Chambre : ${roomName}
 - Arrivée : ${checkIn} (Check-in à partir de 16h)
@@ -170,7 +181,7 @@ Le ton doit être chaleureux, raffiné, accueillant et professionnel.
 Fournis un objet et le corps de l'e-mail sous format JSON avec les clés "subject" et "body".`;
 
       const response = await ai.models.generateContent({
-        model: "gemini-3.6-flash",
+        model: "gemini-2.5-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -179,7 +190,10 @@ Fournis un objet et le corps de l'e-mail sous format JSON avec les clés "subjec
 
       const text = response.text || "{}";
       const parsed = JSON.parse(text);
-      res.json({ success: true, email: parsed });
+      const emailContent = parsed.body
+        ? (parsed.subject ? `Objet : ${parsed.subject}\n\n${parsed.body}` : parsed.body)
+        : (typeof parsed === 'string' ? parsed : JSON.stringify(parsed));
+      res.json({ success: true, email: parsed, emailContent });
     } catch (error: any) {
       console.error("Error generating email with AI:", error);
       res.status(500).json({ success: false, error: error.message || "Erreur lors de la rédaction de l'e-mail." });
@@ -201,7 +215,7 @@ Historique des séjours : ${stayHistory || "Premier séjour"}
 Inclus une recommandation pour lui offrir un accueil mémorable.`;
 
       const response = await ai.models.generateContent({
-        model: "gemini-3.6-flash",
+        model: "gemini-2.5-flash",
         contents: prompt
       });
 

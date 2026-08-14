@@ -38,14 +38,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onOpenSubscription }
   // PWA Install Prompt state
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isPwaInstalled, setIsPwaInstalled] = useState(false);
-  const [copiedAppUrl, setCopiedAppUrl] = useState(false);
-
-  const copyAppUrlToClipboard = () => {
-    const url = window.location.origin;
-    navigator.clipboard.writeText(url);
-    setCopiedAppUrl(true);
-    setTimeout(() => setCopiedAppUrl(false), 3000);
-  };
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -483,7 +475,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onOpenSubscription }
           </div>
         </div>
 
-        {/* Application Mobile (PWA & PWABuilder) Section */}
+        {/* Application Mobile Section */}
         <div className="bg-white rounded-lg shadow-sm border border-stone-200 p-4 sm:p-5">
           <div className="flex items-center justify-between pb-3 border-b border-stone-200">
             <div className="flex items-center space-x-2">
@@ -491,17 +483,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onOpenSubscription }
                 <Smartphone className="w-4 h-4" />
               </div>
               <div>
-                <h2 className="font-bold text-stone-900 text-sm">Application Mobile (PWA & PWABuilder.com)</h2>
-                <p className="text-[11px] text-stone-500">Prête pour l'installation directe & la conversion sur PWABuilder.com (Score 100/100)</p>
+                <h2 className="font-bold text-stone-900 text-sm">Application Mobile</h2>
+                <p className="text-[11px] text-stone-500">Prête pour l'installation directe sur smartphone, tablette ou ordinateur</p>
               </div>
             </div>
-            <span className="bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded border border-emerald-200 flex items-center gap-1">
-              <ShieldCheck className="w-3 h-3 text-emerald-600" />
-              PWABuilder 100/100
-            </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div className="mt-4">
             {/* Direct PWA Install Action */}
             <div className="bg-stone-50 p-3.5 rounded border border-stone-200 flex flex-col justify-between">
               <div>
@@ -531,67 +519,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onOpenSubscription }
                   </button>
                 )}
               </div>
-            </div>
-
-            {/* PWABuilder.com Export Guide */}
-            <div className="bg-amber-50/60 border border-amber-200 p-3.5 rounded flex flex-col justify-between space-y-2">
-              <div>
-                <h3 className="font-bold text-amber-950 text-xs flex items-center gap-1.5">
-                  <ExternalLink className="w-3.5 h-3.5 text-amber-700" />
-                  Générer le Package Mobile sur PWABuilder.com
-                </h3>
-                <p className="text-[11px] text-amber-900 mt-1 leading-relaxed">
-                  Transformez gratuitement cette PWA en application <strong>Android (APK/AAB)</strong>, <strong>iOS</strong> ou <strong>Windows</strong> grâce à PWABuilder :
-                </p>
-
-                <ol className="text-[10px] text-amber-900/90 list-decimal list-inside space-y-1 font-sans mt-2">
-                  <li>Cliquez sur <strong>Copier l'URL</strong> ci-dessous.</li>
-                  <li>Ouvrez <strong className="text-amber-950">PWABuilder.com</strong> dans un nouvel onglet.</li>
-                  <li>Collez l'URL de l'application et cliquez sur <strong className="text-amber-950">Start</strong>.</li>
-                  <li>Téléchargez votre package Store (APK, AAB ou ZIP).</li>
-                </ol>
-              </div>
-
-              <div className="pt-2 flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={copyAppUrlToClipboard}
-                  className="bg-amber-700 hover:bg-amber-800 text-white font-bold text-[11px] px-3 py-1.5 rounded inline-flex items-center gap-1.5 transition cursor-pointer shadow-2xs"
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                  <span>{copiedAppUrl ? 'URL Copiée !' : "Copier l'URL de l'app"}</span>
-                </button>
-
-                <a
-                  href="https://www.pwabuilder.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-stone-900 hover:bg-black text-white font-bold text-[11px] px-3 py-1.5 rounded inline-flex items-center gap-1.5 transition shadow-2xs"
-                >
-                  <span>Ouvrir PWABuilder.com</span>
-                  <ExternalLink className="w-3 h-3 text-amber-300" />
-                </a>
-              </div>
-            </div>
-          </div>
-
-          {/* Technical Checklist Badges */}
-          <div className="mt-3 pt-3 border-t border-stone-200 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px]">
-            <div className="flex items-center gap-1 text-emerald-800 font-medium">
-              <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
-              <span>Manifest Web V3 Valide</span>
-            </div>
-            <div className="flex items-center gap-1 text-emerald-800 font-medium">
-              <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
-              <span>Service Worker Offline (sw.js)</span>
-            </div>
-            <div className="flex items-center gap-1 text-emerald-800 font-medium">
-              <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
-              <span>Icônes Maskable 192 & 512px</span>
-            </div>
-            <div className="flex items-center gap-1 text-emerald-800 font-medium">
-              <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
-              <span>Screenshots Wide & Mobile</span>
             </div>
           </div>
         </div>
