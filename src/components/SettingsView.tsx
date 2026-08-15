@@ -21,15 +21,17 @@ import {
   CheckCircle2,
   CreditCard,
   Zap,
-  Sparkles
+  Sparkles,
+  BookOpen
 } from 'lucide-react';
 import { ICalFeed } from '../types';
 
 interface SettingsViewProps {
   onOpenSubscription?: () => void;
+  onNavigate?: (tab: string) => void;
 }
 
-export const SettingsView: React.FC<SettingsViewProps> = ({ onOpenSubscription }) => {
+export const SettingsView: React.FC<SettingsViewProps> = ({ onOpenSubscription, onNavigate }) => {
   const { settings, updateSettings, rooms, bookings, clearDemoDataAndApplyNewParameters } = useApp();
   const [formData, setFormData] = useState(settings);
   const [savedSuccess, setSavedSuccess] = useState(false);
@@ -153,12 +155,25 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onOpenSubscription }
           </p>
         </div>
 
-        {savedSuccess && (
-          <span className="bg-emerald-800 text-emerald-100 text-xs font-bold px-3 py-1.5 rounded border border-emerald-600 animate-fade-in flex items-center gap-1.5 shadow-sm shrink-0">
-            <Check className="w-4 h-4 text-emerald-300" />
-            Modifications enregistrées avec succès !
-          </span>
-        )}
+        <div className="flex items-center space-x-2">
+          {onNavigate && (
+            <button
+              type="button"
+              onClick={() => onNavigate('guide')}
+              className="bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-medium px-3 py-1.5 rounded border border-stone-700 transition cursor-pointer flex items-center gap-1.5 shrink-0"
+            >
+              <BookOpen className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Guide d'utilisation</span>
+            </button>
+          )}
+
+          {savedSuccess && (
+            <span className="bg-emerald-800 text-emerald-100 text-xs font-bold px-3 py-1.5 rounded border border-emerald-600 animate-fade-in flex items-center gap-1.5 shadow-sm shrink-0">
+              <Check className="w-4 h-4 text-emerald-300" />
+              Modifications enregistrées !
+            </span>
+          )}
+        </div>
       </div>
 
       <form onSubmit={handleSave} className="space-y-4">

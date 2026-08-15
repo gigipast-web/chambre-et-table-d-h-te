@@ -12,7 +12,8 @@ import {
   BarChart3,
   Settings,
   Sparkle,
-  CheckSquare
+  CheckSquare,
+  BookOpen
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -48,6 +49,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onTab
     { id: 'invoices', label: 'Factures & Devis', icon: Receipt },
     { id: 'housekeeping', label: 'Ménage', icon: CheckSquare, badge: pendingCleaning > 0 ? `${pendingCleaning}` : null },
     { id: 'analytics', label: 'Rapports & Stats', icon: BarChart3 },
+    { id: 'guide', label: 'Guide d\'utilisation', icon: BookOpen, badge: 'Aide' },
     { id: 'settings', label: 'Paramètres', icon: Settings },
   ];
 

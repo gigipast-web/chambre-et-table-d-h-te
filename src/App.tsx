@@ -17,6 +17,7 @@ import { InvoicesView } from './components/InvoicesView';
 import { HousekeepingView } from './components/HousekeepingView';
 import { AnalyticsView } from './components/AnalyticsView';
 import { SettingsView } from './components/SettingsView';
+import { UserGuideView } from './components/UserGuideView';
 
 // Modals
 import { NewBookingModal } from './components/NewBookingModal';
@@ -70,8 +71,22 @@ function MainAppLayout() {
         return <HousekeepingView />;
       case 'analytics':
         return <AnalyticsView />;
+      case 'guide':
+        return (
+          <UserGuideView
+            onNavigate={(tab) => setActiveTab(tab)}
+            onOpenNewBooking={() => setShowNewBookingModal(true)}
+            onOpenAiMenu={() => setShowAiMenuModal(true)}
+            onOpenAiEmail={() => setShowAiEmailModal(true)}
+          />
+        );
       case 'settings':
-        return <SettingsView onOpenSubscription={() => setShowSubscriptionModal(true)} />;
+        return (
+          <SettingsView
+            onOpenSubscription={() => setShowSubscriptionModal(true)}
+            onNavigate={(tab) => setActiveTab(tab)}
+          />
+        );
       default:
         return (
           <DashboardView

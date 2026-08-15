@@ -7,7 +7,8 @@ import {
   Utensils,
   CalendarCheck,
   LogOut,
-  User
+  User,
+  BookOpen
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -107,6 +108,19 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">IA Concierge</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab && setActiveTab('guide')}
+              className={`flex items-center space-x-1.5 px-2.5 py-1 rounded text-xs transition-colors cursor-pointer border ${
+                activeTab === 'guide'
+                  ? 'bg-[#4A6741] text-white border-emerald-500 font-semibold'
+                  : 'bg-stone-800 hover:bg-stone-700 text-stone-200 border-stone-700'
+              }`}
+              title="Guide d'utilisation et Aide"
+            >
+              <BookOpen className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden sm:inline">Guide</span>
             </button>
 
             {onOpenSubscription && (

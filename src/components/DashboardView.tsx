@@ -16,7 +16,8 @@ import {
   Users,
   FileText,
   ShieldAlert,
-  ArrowUpRight
+  ArrowUpRight,
+  BookOpen
 } from 'lucide-react';
 
 interface DashboardViewProps {
@@ -125,6 +126,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <span>Menu IA du jour</span>
             </button>
           )}
+
+          <button
+            onClick={() => handleNavigate('guide')}
+            className="flex items-center space-x-1.5 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 px-3 py-1.5 rounded text-xs font-medium border border-emerald-700/60 transition cursor-pointer"
+            title="Consulter le Guide d'utilisation"
+          >
+            <BookOpen className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Guide d'utilisation</span>
+          </button>
         </div>
       </div>
 
